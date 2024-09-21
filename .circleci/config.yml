@@ -1,0 +1,37 @@
+version: 2.1
+jobs:
+  test:
+    machine:
+      image: ubuntu-2004:current
+      docker_layer_caching: true
+    resource_class: medium
+    working_directory: ~/app
+    steps:
+      - checkout
+
+      - run:
+          name: "Build processing tools"
+          command: |
+            TARGETARCH=amd64 docker-compose build
+
+      - run:
+          name: "Run mypy - check types"
+          command: |
+            docker-compose run ptools poetry run mypy .
+
+      - run:
+          name: "Run pytest"
+          command: |
+            docker-compose run ptools poetry run pytest
+
+workflows:
+  build-and-test-dev:
+    unless:
+      equal: [ master, << pipeline.git.branch >> ]
+    jobs:
+      - test
+  build-and-test-release:
+    when:
+      equal: [ master, << pipeline.git.branch >> ]
+    jobs:
+      - test

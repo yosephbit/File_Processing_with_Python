@@ -1,0 +1,10 @@
+.git/
+venv/
+.pytest_cache
+.devcontainer
+__pycache__/
+.vscode/
+img/
+.mypy_cache
+.github
+.circleci

@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  stressor:
+    build:
+      context: .
+      dockerfile: stressor/Dockerfile
+    volumes:
+      - .:/testapp
+    depends_on:
+      - browserless
+      - test_server
+      - ptools
+
+  # "ptools" is an easy to type abbreviation for processing-tools.
+  # (This docker-compose.yml is only used for development purposes.)
+  ptools:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+      args:
+        TARGETARCH: ${TARGETARCH-arm64}
+    tty: true
+    volumes:
+      - .:/home/fastapi/app
+    depends_on:
+      - browserless
+      - test_server
+    environment:
+      BROWSERLESS_SERVER_ENDPOINT: http://browserless:3000
+      DEBUG: 1
+    ports:
+      - 9898:8080
+
+  test_server:
+    image: halverneus/static-file-server
+    volumes:
+      - ./tests/files/:/web
+    ports:
+      - 8081:8081
+    environment:
+      PORT: "8081"
+
+  browserless:
+    image: browserless/chrome
+    ports:
+      - 3000:3000
